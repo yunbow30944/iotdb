@@ -88,6 +88,7 @@ public class UDTFForecast implements UDTF {
   private static final Boolean DEFAULT_KEEP_INPUT = Boolean.FALSE;
   private static final String OPTIONS_PARAMETER_NAME = "MODEL_OPTIONS";
   private static final String DEFAULT_OPTIONS = "";
+  private static final int MAX_INPUT_LENGTH = 2880;
 
   private void checkType() {
     for (Type type : this.types) {
@@ -114,6 +115,7 @@ public class UDTFForecast implements UDTF {
     }
     ModelInferenceDescriptor descriptor = modelFetcher.fetchModel(this.model_id);
     this.targetAINode = descriptor.getTargetAINode();
+    this.maxInputLength = MAX_INPUT_LENGTH;
 
     this.outputInterval = parameters.getLongOrDefault(OUTPUT_INTERVAL, DEFAULT_OUTPUT_INTERVAL);
     this.outputLength =

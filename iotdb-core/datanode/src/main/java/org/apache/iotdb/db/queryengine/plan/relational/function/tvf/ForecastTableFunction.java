@@ -27,6 +27,7 @@ import org.apache.iotdb.db.protocol.client.ainode.AINodeClient;
 import org.apache.iotdb.db.protocol.client.ainode.AINodeClientManager;
 import org.apache.iotdb.db.queryengine.plan.analyze.IModelFetcher;
 import org.apache.iotdb.db.queryengine.plan.planner.plan.parameter.model.ModelInferenceDescriptor;
+import org.apache.iotdb.db.queryengine.plan.relational.utils.ResultColumnAppender;
 import org.apache.iotdb.rpc.TSStatusCode;
 import org.apache.iotdb.udf.api.relational.TableFunction;
 import org.apache.iotdb.udf.api.relational.access.Record;
@@ -70,6 +71,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.iotdb.commons.udf.builtin.relational.tvf.WindowTVFUtils.findColumnIndex;
+import static org.apache.iotdb.db.queryengine.plan.relational.utils.ResultColumnAppender.createResultColumnAppender;
 import static org.apache.iotdb.rpc.TSStatusCode.CAN_NOT_CONNECT_AINODE;
 
 public class ForecastTableFunction implements TableFunction {
@@ -490,21 +492,6 @@ public class ForecastTableFunction implements TableFunction {
       this.inputTsBlockBuilder = new TsBlockBuilder(tsDataTypeList);
     }
 
-    private static ResultColumnAppender createResultColumnAppender(Type type) {
-      switch (type) {
-        case INT32:
-          return new Int32Appender();
-        case INT64:
-          return new Int64Appender();
-        case FLOAT:
-          return new FloatAppender();
-        case DOUBLE:
-          return new DoubleAppender();
-        default:
-          throw new IllegalArgumentException("Unsupported column type: " + type);
-      }
-    }
-
     @Override
     public void process(
         Record input,
@@ -641,102 +628,6 @@ public class ForecastTableFunction implements TableFunction {
             TSStatusCode.INTERNAL_SERVER_ERROR.getStatusCode());
       }
       return res;
-    }
-  }
-
-  private interface ResultColumnAppender {
-    void append(Record row, int columnIndex, ColumnBuilder properColumnBuilder);
-
-    double getDouble(Record row, int columnIndex);
-
-    void writeDouble(double value, ColumnBuilder columnBuilder);
-  }
-
-  private static class Int32Appender implements ResultColumnAppender {
-
-    @Override
-    public void append(Record row, int columnIndex, ColumnBuilder properColumnBuilder) {
-      if (row.isNull(columnIndex)) {
-        properColumnBuilder.appendNull();
-      } else {
-        properColumnBuilder.writeInt(row.getInt(columnIndex));
-      }
-    }
-
-    @Override
-    public double getDouble(Record row, int columnIndex) {
-      return row.getInt(columnIndex);
-    }
-
-    @Override
-    public void writeDouble(double value, ColumnBuilder columnBuilder) {
-      columnBuilder.writeInt((int) value);
-    }
-  }
-
-  private static class Int64Appender implements ResultColumnAppender {
-
-    @Override
-    public void append(Record row, int columnIndex, ColumnBuilder properColumnBuilder) {
-      if (row.isNull(columnIndex)) {
-        properColumnBuilder.appendNull();
-      } else {
-        properColumnBuilder.writeLong(row.getLong(columnIndex));
-      }
-    }
-
-    @Override
-    public double getDouble(Record row, int columnIndex) {
-      return row.getLong(columnIndex);
-    }
-
-    @Override
-    public void writeDouble(double value, ColumnBuilder columnBuilder) {
-      columnBuilder.writeLong((long) value);
-    }
-  }
-
-  private static class FloatAppender implements ResultColumnAppender {
-
-    @Override
-    public void append(Record row, int columnIndex, ColumnBuilder properColumnBuilder) {
-      if (row.isNull(columnIndex)) {
-        properColumnBuilder.appendNull();
-      } else {
-        properColumnBuilder.writeFloat(row.getFloat(columnIndex));
-      }
-    }
-
-    @Override
-    public double getDouble(Record row, int columnIndex) {
-      return row.getFloat(columnIndex);
-    }
-
-    @Override
-    public void writeDouble(double value, ColumnBuilder columnBuilder) {
-      columnBuilder.writeFloat((float) value);
-    }
-  }
-
-  private static class DoubleAppender implements ResultColumnAppender {
-
-    @Override
-    public void append(Record row, int columnIndex, ColumnBuilder properColumnBuilder) {
-      if (row.isNull(columnIndex)) {
-        properColumnBuilder.appendNull();
-      } else {
-        properColumnBuilder.writeDouble(row.getDouble(columnIndex));
-      }
-    }
-
-    @Override
-    public double getDouble(Record row, int columnIndex) {
-      return row.getDouble(columnIndex);
-    }
-
-    @Override
-    public void writeDouble(double value, ColumnBuilder columnBuilder) {
-      columnBuilder.writeDouble(value);
     }
   }
 }

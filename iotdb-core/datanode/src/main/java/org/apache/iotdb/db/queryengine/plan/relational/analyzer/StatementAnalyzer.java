@@ -40,6 +40,7 @@ import org.apache.iotdb.db.queryengine.plan.relational.analyzer.tablefunction.Ar
 import org.apache.iotdb.db.queryengine.plan.relational.analyzer.tablefunction.TableArgumentAnalysis;
 import org.apache.iotdb.db.queryengine.plan.relational.analyzer.tablefunction.TableFunctionInvocationAnalysis;
 import org.apache.iotdb.db.queryengine.plan.relational.function.TableBuiltinTableFunction;
+import org.apache.iotdb.db.queryengine.plan.relational.function.tvf.ClassifyTableFunction;
 import org.apache.iotdb.db.queryengine.plan.relational.function.tvf.ForecastTableFunction;
 import org.apache.iotdb.db.queryengine.plan.relational.metadata.ColumnSchema;
 import org.apache.iotdb.db.queryengine.plan.relational.metadata.Metadata;
@@ -4697,6 +4698,8 @@ public class StatementAnalyzer {
       // set model fetcher for ForecastTableFunction
       if (function instanceof ForecastTableFunction) {
         ((ForecastTableFunction) function).setModelFetcher(metadata.getModelFetcher());
+      } else if (function instanceof ClassifyTableFunction) {
+        ((ClassifyTableFunction) function).setModelFetcher(metadata.getModelFetcher());
       }
 
       Node errorLocation = node;
